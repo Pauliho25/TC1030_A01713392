@@ -1,0 +1,94 @@
+#include <iostream>
+#include <vector>
+using namespace std;
+
+// Clase base
+class Product {
+protected:
+    int id;
+    string name;
+    int quantity;
+    double price;
+
+public:
+    Product(int id, string name, int quantity, double price) {
+        this->id = id;
+        this->name = name;
+        this->quantity = quantity;
+        this->price = price;
+    }
+
+    // Método virtual para permitir polimorfismo
+    virtual double getTotalValue() {
+        return quantity * price;
+    }
+
+    virtual void showInfo() {
+        cout << "ID: " << id << ", Nombre: " << name 
+             << ", Cantidad: " << quantity << ", Precio: $" << price << endl;
+    }
+
+    virtual ~Product() {}  // Destructor virtual para evitar errores al eliminar
+};
+
+// Clase derivada
+class DiscountedProduct : public Product {
+private:
+    double discount;
+
+public:
+    DiscountedProduct(int id, string name, int quantity, double price, double discount)
+        : Product(id, name, quantity, price), discount(discount) {}
+
+    // Polimorfismo: sobrescribimos el comportamiento
+    double getTotalValue() override {
+        return quantity * price * (1.0 - discount);
+    }
+
+    void showInfo() override {
+        cout << "[DESCUENTO] ID: " << id << ", Nombre: " << name 
+             << ", Cantidad: " << quantity << ", Precio: $" << price 
+             << ", Descuento: " << (discount * 100) << "%" << endl;
+    }
+};
+
+// Clase que administra el inventario
+class Inventory {
+private:
+    vector<Product*> products;
+
+public:
+    void addProduct(Product* p) {
+        products.push_back(p);
+    }
+
+    void showInventory() {
+        for (Product* p : products) {
+            p->showInfo();  // Se aplica polimorfismo aquí
+            cout << "Valor total: $" << p->getTotalValue() << endl << endl;
+        }
+    }
+
+    ~Inventory() {
+        for (Product* p : products) {
+            delete p;
+        }
+    }
+};
+
+// Función principal
+int main() {
+    Inventory inventory;
+
+    // Agregamos productos con y sin descuento
+    Product* normal = new Product(1, "Cuaderno", 10, 20.0);
+    Product* descuento = new DiscountedProduct(2, "Mochila", 5, 100.0, 0.3); // 30% de descuento
+
+    inventory.addProduct(normal);
+    inventory.addProduct(descuento);
+
+    // Mostrar inventario con comportamiento polimórfico
+    inventory.showInventory();
+
+    return 0;
+}
